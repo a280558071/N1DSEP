@@ -1,4 +1,7 @@
 %% On the Topology Constraint for N-1 DSEP
+% This function solve the 24-node DSEP problem considering the voltage
+% constraints
+% 该函数解决24节点配电网N-1扩展规划问题，考虑节点电压约束
 % [1] Lin Z, Hu Z, Song Y. Distribution Network Expansion Planning Considering N-1 Criterion[J]. 
 % IEEE Transactions on Power Systems, 2019, 34(3): 2476-2478.
 % [2] Lei S, Chen C, Song Y, et al. Radiality Constraints for Resilient Reconfiguration of Distribution Systems: Formulation and Application to Microgrid Formation
@@ -97,7 +100,7 @@ Obj=sum(Cost.*x)+VOLL*sum(sum(rt));
 % Obj=sum(Cost.*x);
 
 Cons=[];
-%% Operation logic y<=x in any contigency C_l
+%% Cons1: Operation logic y<=x in any contigency C_l
 Cons_Op=[];
 for C_l=1:L
     Cons_Op=[Cons_Op, y(:,C_l)<=x];
@@ -106,7 +109,7 @@ end
 Cons=[Cons,Cons_Op];
 % size(Cons_Op)
 % size(Cons)
-%% Contigencies happens, when y(i,i)==0, which indicates that outage of line i happens
+%% Cons2: Contigencies happens, when y(i,i)==0, which indicates that outage of line i happens
 Cons_Co=[];
 for C_l=1:L
     Cons_Co=[Cons_Co, y(C_l,C_l)==0];
@@ -115,9 +118,9 @@ end
 Cons=[Cons,Cons_Co];
 % size(Cons_Co)
 % size(Cons)
-%% Single Commodity Flow Constr.
-%% Fencing Constr.
-%% Spanning Tree Constr. 
+%% Cons3: Single Commodity Flow Constr.
+%% Cons4: Fencing Constr.
+%% Cons5: Spanning Tree Constr. 
 % J. A. Taylor and F. S. Hover, “Convex models of distribution system reconfiguration,” IEEE Trans. Power Syst., vol. 27, no. 3, pp. 1407–1413,Aug. 2012.
 Cons_ST=[];
 for C_l=1:L
@@ -146,7 +149,7 @@ end
 Cons=[Cons,Cons_ST];
 % size(Cons_ST)
 % size(Cons)
-%% Degree of Each Node Constr.
+%% Cons6: Degree of Each Node Constr.
 Cons_De=[];
 for i=N_Loads
     Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=2];
@@ -154,7 +157,7 @@ end
 % Cons=[Cons,Cons_De];
 % size(Cons_De)
 % size(Cons)
-%% Power balance
+%% Cons7: Power balance
 Cons_Load=[];
 for C_l=1:L
     Cons_Load=[Cons_Load,Full_I*f(:,C_l)==[-(Load-rt(:,C_l));g_Sub(:,C_l)]];
@@ -163,7 +166,7 @@ end
 Cons=[Cons,Cons_Load];
 % size(Cons_Load)
 % size(Cons)
-%% power flow limitation in each line
+%% Cons8: power flow limitation in each line
 Cons_Line=[];
 for C_l=1:L
     Cons_Line=[Cons_Line,-y(:,C_l).*f_Max<=f(:,C_l)<=y(:,C_l).*f_Max];
@@ -172,20 +175,25 @@ Cons=[Cons,Cons_Line];
 % size(Cons_Line)
 % size(Cons)
 
-%% Power limits of Subs
+%% Cons9: Power limits of Subs
 Cons_Sub=[0<=g_Sub<=g_Sub_Max];
 Cons=[Cons,Cons_Sub];
 % size(Cons_Sub)
 % size(Cons)
 
-%% solve the problem
+%% Cons10: Voltage Constraints
+Cons_Vol=[];
+for C_l=1:L
+end
+
+%% Set initial guess of x,y and be_Nodes to values in "Case24_nof.mat"
 ops=sdpsettings('solver','gurobi','verbose',2,'cplex.mip.display',3,'usex0',1);
 load('Case24_nof.mat','s_x','s_y','s_be');
 assign(x,s_x);
 assign(y,s_y);
 assign(be,s_be);
 
-%% Set initial guess of x,y and be_Nodes to values in "Case24_nof.mat"
+%% solve the problem
 sol1=optimize(Cons,Obj,ops);
 %% Save the solution with "s_" as start
 s_x1=value(x);
