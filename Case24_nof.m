@@ -97,7 +97,7 @@ Obj=sum(Cost.*x);
 % Obj=sum(Cost.*x);
 
 Cons=[];
-%% Operation logic y<=x in any contigency C_l
+%% Cons1: Operation logic y<=x in any contigency C_l
 Cons_Op=[];
 for C_l=1:L
     Cons_Op=[Cons_Op, y(:,C_l)<=x];
@@ -106,7 +106,7 @@ end
 Cons=[Cons,Cons_Op];
 % size(Cons_Op)
 % size(Cons)
-%% Contigencies happens, when y(i,i)==0, which indicates that outage of line i happens
+%% Cons2: Contigencies happens, when y(i,i)==0, which indicates that outage of line i happens
 Cons_Co=[];
 for C_l=1:L
     Cons_Co=[Cons_Co, y(C_l,C_l)==0];
@@ -115,9 +115,9 @@ end
 Cons=[Cons,Cons_Co];
 % size(Cons_Co)
 % size(Cons)
-%% Single Commodity Flow Constr.
-%% Fencing Constr.
-%% Spanning Tree Constr. 
+%% Cons3: Single Commodity Flow Constr.
+%% Cons4: Fencing Constr.
+%% Cons5: Spanning Tree Constr. 
 % J. A. Taylor and F. S. Hover, ¡°Convex models of distribution system reconfiguration,¡± IEEE Trans. Power Syst., vol. 27, no. 3, pp. 1407¨C1413,Aug. 2012.
 Cons_ST=[];
 for C_l=1:L
@@ -146,7 +146,7 @@ end
 Cons=[Cons,Cons_ST];
 % size(Cons_ST)
 % size(Cons)
-%% Degree of Each Node Constr.
+%% Cons6: Degree of Each Node Constr.
 Cons_De=[];
 for i=N_Loads
     Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=2];
@@ -154,7 +154,7 @@ end
 % Cons=[Cons,Cons_De];
 % size(Cons_De)
 % size(Cons)
-%% Power balance
+%% Cons7: Power balance
 % Cons_Load=[];
 % for C_l=1:L
 %     Cons_Load=[Cons_Load,Full_I*f(:,C_l)==[-(Load-rt(:,C_l));g_Sub(:,C_l)]];
@@ -163,7 +163,7 @@ end
 % Cons=[Cons,Cons_Load];
 % size(Cons_Load)
 % size(Cons)
-%% power flow limitation in each line
+%% Cons8: power flow limitation in each line
 % Cons_Line=[];
 % for C_l=1:L
 %     Cons_Line=[Cons_Line,-y(:,C_l).*f_Max<=f(:,C_l)<=y(:,C_l).*f_Max];
@@ -172,7 +172,7 @@ end
 % size(Cons_Line)
 % size(Cons)
 
-%% Power limits of Subs
+%% Cons9: Power limits of Subs
 % Cons_Sub=[0<=g_Sub<=g_Sub_Max];
 % Cons=[Cons,Cons_Sub];
 % size(Cons_Sub)
