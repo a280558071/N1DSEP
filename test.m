@@ -29,3 +29,4 @@ for i=yr'
     end
     title(['Contigency ' num2str(i) ' happens, shedding load in node ', num2str(xr(j))]);
 end
+
