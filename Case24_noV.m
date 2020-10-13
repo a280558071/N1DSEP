@@ -86,7 +86,7 @@ highlight(p,N_Subs,'Marker','s','NodeColor','g');
 ConsInf=xlsread('multistage_node24.xlsx','G3:R42');
 Load=xlsread('multistage_node24.xlsx','D2:D21');
 f_Max=ConsInf(:,10);
-f_Max=ones(L,1)*50;
+% f_Max=ones(L,1)*50;
 g_Sub_Max=50;
 VOLL=1e8;
 Cost=ConsInf(:,12).*ConsInf(:,3);
@@ -154,14 +154,14 @@ Cons_De=[];
 for i=N_Loads
     Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=2];
 end
-% Cons=[Cons,Cons_De];
+Cons=[Cons,Cons_De];
 % size(Cons_De)
 % size(Cons)
 %% Cons7: Power balance
 Cons_Load=[];
 for C_l=1:L
     Cons_Load=[Cons_Load,Full_I*f(:,C_l)==[-(Load-rt(:,C_l));g_Sub(:,C_l)]];
-    Cons_Load=[Cons_Load,Load>=rt(:,C_l)>=0,rt(:,C_l)==0];
+    Cons_Load=[Cons_Load,Load>=rt(:,C_l)>=0];
 end
 Cons=[Cons,Cons_Load];
 % size(Cons_Load)
@@ -198,7 +198,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case24_noV_nox0');
+save('Case24_noV_nox0_withDE_realf');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
@@ -221,6 +221,39 @@ for i=1:5 % Contigency i happens
     highlight(pi(i),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
     highlight(pi(i),s_temp(i),t_temp(i),'EdgeColor','k','LineStyle','-','LineWidth',4);  % black line denotes the outage line
     highlight(pi(i),s_temp(find(s_y1(:,i)==1)),t_temp(find(s_y1(:,i)==1)),'EdgeColor','r','LineWidth',6,'LineStyle','-');
+end
+
+%% find where rt!=0 and plot the Contigency senario
+[xr,yr]=find(s_rt1~=0);
+j=0;
+for i=yr'
+    j=j+1;
+    figure;
+    s_temp=s;
+    t_temp=t;
+    N_RLoads=find(N_Loads~=xr(j));
+    for l=1:L
+        if s_be1(l,i,2)==1
+            s1=s_temp(l);
+            s_temp(l)=t(l);
+            t_temp(l)=s1;
+        end
+    end
+    Gi=digraph(s_temp,t_temp);
+    pir(j)=plot(Gi,'Layout','force');
+    pir(j).XData=CXY(1,:);
+    pir(j).YData=CXY(2,:);
+    labelnode(pir(j),N_Subs,{'Sub_2_1','Sub_2_2','Sub_2_3','Sub_2_4'});
+    highlight(pir(j),N_Subs,'Marker','s','NodeColor','g','MarkerSize',10);
+    highlight(pir(j),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','--','LineWidth',1);
+    highlight(pir(j),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
+    highlight(pir(j),s_temp(i),t_temp(i),'EdgeColor','k','LineStyle','-','LineWidth',4);  % black line denotes the outage line
+    highlight(pir(j),s_temp(find(s_y1(:,i)==1)),t_temp(find(s_y1(:,i)==1)),'EdgeColor','r','LineWidth',6,'LineStyle','-');
+    labelnode(pir(j),xr(j),{[num2str(Load(xr(j))) ' Lost ' num2str(s_rt1(xr(j),yr(j)))]});
+    for k=1:length(N_RLoads)
+        labelnode(pir(j),N_RLoads(k),num2str(Load(N_RLoads(k))));
+    end
+    title(['Contigency ' num2str(i) ' happens, shedding load in node ', num2str(xr(j))]);
 end
 
 % figure;
