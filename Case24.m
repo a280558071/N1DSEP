@@ -85,15 +85,19 @@ highlight(p,N_Subs,'Marker','s','NodeColor','g');
 %% Variable statement
 ConsInf=xlsread('multistage_node24.xlsx','G3:R42');
 Load=xlsread('multistage_node24.xlsx','D2:D21');
+ll=ConsInf(:,3);  %line length
+Z_pu=ConsInf(:,11);  % line impedance per unit
+Z=Z_pu.*ll;         % line impedanze Z
 f_Max=ConsInf(:,10);
-f_Max=ones(L,1)*50;
+% f_Max=ones(L,1)*50;
 g_Sub_Max=50;
 VOLL=1e8;
 Cost=ConsInf(:,12).*ConsInf(:,3);
 x=binvar(L,1,'full');     %Vars for line construction, x(i,1)==1 dentoes that line i is constructed.
 y=binvar(L,L,'full');   %Vars for line operation flag in different contigencies, y(line operation,Cont_l)==0
-be=binvar(L,L,2,'full');  %Vars for line direction flag in different contigencies
+be=binvar(L,L,2,'full');  %Vars for line direction flag in different contigencies, be(l,C_l,1)==1 means s() is the parent node of t()
 f=sdpvar(L,L,'full');    %Vars for power flow in each line
+v=sdpvar(N,L,'full');    %Nodes' voltage for each node
 rt=sdpvar(length(N_Loads),L,'full');    %Vars for curtailed load in each load node
 g_Sub=sdpvar(length(N_Subs),L,'full');    %Vars for generated power of Subs
 Obj=sum(Cost.*x)+VOLL*sum(sum(rt));
@@ -184,7 +188,11 @@ Cons=[Cons,Cons_Sub];
 %% Cons10: Voltage Constraints
 Cons_Vol=[];
 for C_l=1:L
+    for l=1:L
+        Cons_Vol=[Cons_Vol,v(s(l),C_l)-v(t(l),C_l)-f(l,C_l)*Z(l)<=M*(1-y(l,C_l))];
+    end
 end
+Cons=[Cons,Cons_Vol];
 
 %% Set initial guess of x,y and be_Nodes to values in "Case24_nof.mat"
 ops=sdpsettings('solver','gurobi','verbose',2,'cplex.mip.display',3,'usex0',1);
@@ -203,7 +211,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case24_withf_realf_usex0_noDE');
+save('Case24_V_nox0_withDE');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
