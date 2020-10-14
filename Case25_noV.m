@@ -12,57 +12,80 @@
 
 clear all
 
-st=[2	21
-6	22
-1	21
-8	22
+st=[1	22
+1	2
 1	5
-1	9
-1	14
 2	3
-2	12
-3	10
-3	16
+2	6
 3	23
-4	7
+3	7
+4	22
+4	5
 4	9
-4	15
-% 4	16
+5	10
 5	6
-5	24
-6	13
-6	17
+6	11
+6	7
+7	12
 7	8
-7	11
-7	19
-7	23
-10	16
-10	23
-11	23
-14	18
-15	17
+8	13
+9	10
+9	14
+10	15
+10	11
+11	16
+11	12
+12	17
+12	13
+13	18
+14	15
+14	24
 15	19
-17	22
-18	24
-20	24
-13  24
-20  18
-12  21
-12  10
-9   21
-9   5
-2   16
-3   4
+15	16
+16	20
+16	17
+17	21
+17	18
+18	25
+24	19
+19	20
+20	21
+21	25
+23	8
 ];
-CXY=[1.31	0.11	-0.96	-0.64	0.90	0.00	-1.60	-1.69	0.55	-0.63	-1.98	0.29	0.80	2.14	-0.10	-0.60	-0.75	2.35	-1.17	2.35	0.86	-1.17	-1.28	1.61
-0.07	-0.70	-1.02	-0.44	0.91	1.53	-0.59	0.58	-0.11	-1.99	-1.34	-1.75	2.05	0.70	0.53	-1.41	1.16	1.54	0.07	2.14	-0.97	2.05	-1.61	1.75];
+CXY=[1	4
+2	4
+3	4
+0	3
+1	3
+2	3
+3	3
+4	3
+0	2
+1	2
+2	2
+3	2
+4	2
+0	1
+1	1
+2	1
+3	1
+4	1
+1	0
+2	0
+3	0
+0	4
+4	4
+0	0
+4	0
+]';
 s=st(:,1);
 t=st(:,2);
 L=length(s);
-N=24;
+N=25;
 
-N_Subs=[21,22,23,24];
-N_Loads=1:20;
+N_Subs=[22,23,24,25];
+N_Loads=1:21;
 G=digraph(s,t);
 idxOut = findedge(G,s,t); % !!!!!!*************** index of edge is not the same with that of in mpc.branch !!!!!!*******
 A=adjacency(G);  % ÁÚ½Ó¾ØÕó
@@ -77,14 +100,14 @@ p=plot(G,'Layout','force');
 p.XData=CXY(1,:);
 p.YData=CXY(2,:);
 hold on;
-labelnode(p,N_Subs,{'Sub_2_1','Sub_2_2','Sub_2_3','Sub_2_4'});
+labelnode(p,N_Subs,{'Sub_2_2','Sub_2_3','Sub_2_4','Sub_2_5'});
 highlight(p,N_Subs,'Marker','s','NodeColor','g');
 % G_Subs = subgraph(G,N_Subs);
 % p1=plot(G_Subs);
 
 %% Variable statement
-ConsInf=xlsread('multistage_node24.xlsx','G3:R42');
-Load=xlsread('multistage_node24.xlsx','D2:D21');
+ConsInf=xlsread('multistage_node25.xlsx','G3:R42');
+Load=xlsread('multistage_node25.xlsx','D2:D22');
 f_Max=ConsInf(:,10);
 % f_Max=ones(L,1)*50;
 g_Sub_Max=50;
@@ -104,7 +127,7 @@ Cons=[];
 Cons_Op=[];
 for C_l=1:L
     Cons_Op=[Cons_Op, y(:,C_l)<=x];
-    Cons_Op=[Cons_Op, sum(y(:,C_l))==20];
+    Cons_Op=[Cons_Op, sum(y(:,C_l))==N-length(N_Subs)];
 end
 Cons=[Cons,Cons_Op];
 % size(Cons_Op)
@@ -113,7 +136,6 @@ Cons=[Cons,Cons_Op];
 Cons_Co=[];
 for C_l=1:L
     Cons_Co=[Cons_Co, y(C_l,C_l)==0];
-    Cons_Op=[Cons_Op, sum(y(:,C_l))==20];
 end
 Cons=[Cons,Cons_Co];
 % size(Cons_Co)
@@ -181,12 +203,12 @@ Cons=[Cons,Cons_Sub];
 % size(Cons_Sub)
 % size(Cons)
 
-%% Set initial guess of x,y and be_Nodes to values in "Case24_nof.mat"
-ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.display',3,'usex0',0);
-% load('Case24_nof.mat','s_x','s_y','s_be');
-% assign(x,s_x);
-% assign(y,s_y);
-% assign(be,s_be);
+%% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
+ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.display',3,'usex0',1);
+load('Case25_noV_nox0_withDE3_realf12.mat','s_x1','s_y1','s_be1');
+assign(x,s_x1);
+assign(y,s_y1);
+assign(be,s_be1);
 
 %% solve the problem
 sol1=optimize(Cons,Obj,ops);
@@ -198,7 +220,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case24_noV_nox0_withDE_realf');
+save('Case25_noV_withx0_withDE2_realf12');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
@@ -255,15 +277,3 @@ for i=yr'
     end
     title(['Contigency ' num2str(i) ' happens, shedding load in node ', num2str(xr(j))]);
 end
-
-% figure;
-% pi=plot(G,'Layout','force');
-% labelnode(pi,N_Subs,{'Sub_2_1','Sub_2_2','Sub_2_3','Sub_2_4'});
-% highlight(pi,N_Subs,'Marker','s','NodeColor','g','MarkerSize',10);
-% highlight(pi,s(find(s_x==1)),t(find(s_x==1)),'LineWidth',4); % bold line denotes the newly-built line
-% 
-% figure;
-% pi1=plot(G,'Layout','force');
-% labelnode(pi1,N_Subs,{'Sub_2_1','Sub_2_2','Sub_2_3','Sub_2_4'});
-% highlight(pi1,N_Subs,'Marker','s','NodeColor','g','MarkerSize',10);
-% highlight(pi1,s(find(s_x1==1)),t(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
