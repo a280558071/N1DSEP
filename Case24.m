@@ -98,6 +98,7 @@ y=binvar(L,L,'full');   %Vars for line operation flag in different contigencies,
 be=binvar(L,L,2,'full');  %Vars for line direction flag in different contigencies, be(l,C_l,1)==1 means s() is the parent node of t()
 f=sdpvar(L,L,'full');    %Vars for power flow in each line
 v=sdpvar(N,L,'full');    %Nodes' voltage for each node
+F=sdpvar(L,1,'full');    %Fictitious flow in each line, to complete SCF constraints
 rt=sdpvar(length(N_Loads),L,'full');    %Vars for curtailed load in each load node
 g_Sub=sdpvar(length(N_Subs),L,'full');    %Vars for generated power of Subs
 Obj=sum(Cost.*x)+VOLL*sum(sum(rt));
@@ -123,6 +124,11 @@ Cons=[Cons,Cons_Co];
 % size(Cons_Co)
 % size(Cons)
 %% Cons3: Single Commodity Flow Constr.
+Cons_SCF=[];
+for i=N_Loads
+    Cons_SCF=[Cons_SCF,sum(x([find(s==i);find(t==i)]))>=2];
+end
+
 %% Cons4: Fencing Constr.
 %% Cons5: Spanning Tree Constr. 
 % J. A. Taylor and F. S. Hover, ¡°Convex models of distribution system reconfiguration,¡± IEEE Trans. Power Syst., vol. 27, no. 3, pp. 1407¨C1413,Aug. 2012.
