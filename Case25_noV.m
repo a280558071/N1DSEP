@@ -117,6 +117,8 @@ x=binvar(L,1,'full');     %Vars for line construction, x(i,1)==1 dentoes that li
 y=binvar(L,L,'full');   %Vars for line operation flag in different contigencies, y(line operation,Cont_l)==0
 be=binvar(L,L,2,'full');  %Vars for line direction flag in different contigencies
 f=sdpvar(L,L,'full');    %Vars for power flow in each line
+F=sdpvar(L,L,'full');    %Fictitious flow in each line, to complete SCF constraints
+D=ones(length(N_Loads),L);   %Fictitious demand in each load
 rt=sdpvar(length(N_Loads),L,'full');    %Vars for curtailed load in each load node
 g_Sub=sdpvar(length(N_Subs),L,'full');    %Vars for generated power of Subs
 Obj=sum(Cost.*x)+VOLL*sum(sum(rt));
@@ -141,6 +143,22 @@ Cons=[Cons,Cons_Co];
 % size(Cons_Co)
 % size(Cons)
 %% Cons3: Single Commodity Flow Constr.
+% Cons_SCF=[];
+% M=1e3;
+% for i=N_Loads
+%     for C_l=1:L
+%         li=Full_I(i,:);
+%         lij=find(li==1);   % the set of lines start from node i
+%         lki=find(li==-1);  % the set of lines end at node i
+%         Cons_SCF=[Cons_SCF,sum(F(lij,C_l))+D(i,C_l)==sum(F(lki,C_l))];
+%     end
+% end
+% for C_l=1:L
+%     for l=1:L
+%         Cons_SCF=[Cons_SCF, abs(F(l,C_l))<=y(l,C_l)*M];
+%     end
+% end
+% Cons=[Cons,Cons_SCF];
 %% Cons4: Fencing Constr.
 %% Cons5: Spanning Tree Constr. 
 % J. A. Taylor and F. S. Hover, ¡°Convex models of distribution system reconfiguration,¡± IEEE Trans. Power Syst., vol. 27, no. 3, pp. 1407¨C1413,Aug. 2012.
@@ -172,11 +190,11 @@ Cons=[Cons,Cons_ST];
 % size(Cons_ST)
 % size(Cons)
 %% Cons6: Degree of Each Node Constr.
-Cons_De=[];
-for i=N_Loads
-    Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=2];
-end
-Cons=[Cons,Cons_De];
+% Cons_De=[];
+% for i=N_Loads
+%     Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=3];
+% end
+% Cons=[Cons,Cons_De];
 % size(Cons_De)
 % size(Cons)
 %% Cons7: Power balance
@@ -204,7 +222,7 @@ Cons=[Cons,Cons_Sub];
 % size(Cons)
 
 %% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
-ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.display',3,'usex0',1);
+ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.display',3,'usex0',0,'cplex.mip.tolerances.mipgap',5e-2);
 load('Case25_noV_nox0_withDE3_realf12.mat','s_x1','s_y1','s_be1');
 assign(x,s_x1);
 assign(y,s_y1);
@@ -220,7 +238,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case25_noV_withx0_withDE2_realf12');
+save('Case25_noV_nox0_noDE_realf12_noSCF_Gap5');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
