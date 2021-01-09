@@ -190,11 +190,11 @@ Cons=[Cons,Cons_ST];
 % size(Cons_ST)
 % size(Cons)
 %% Cons6: Degree of Each Node Constr.
-Cons_De=[];
-for i=N_Loads
-    Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=2];
-end
-Cons=[Cons,Cons_De];
+% Cons_De=[];
+% for i=N_Loads
+%     Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=2];
+% end
+% Cons=[Cons,Cons_De];
 % size(Cons_De)
 % size(Cons)
 %% Cons7: Power balance
@@ -222,11 +222,11 @@ Cons=[Cons,Cons_Sub];
 % size(Cons)
 
 %% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
-ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',1,'cplex.mip.tolerances.mipgap',5e-2);
-load('Case25_noHeu_noV_nox0_withDE3_realf12_noSCF_Gap5.mat','s_x1','s_y1','s_be1');
-assign(x,s_x1);
-assign(y,s_y1);
-assign(be,s_be1);
+ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.limits.cutpasses',-1,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',0,'cplex.mip.tolerances.mipgap',5e-2);
+% load('Case25_noHeu_noV_nox0_withDE3_realf12_noSCF_Gap5.mat','s_x1','s_y1','s_be1');
+% assign(x,s_x1);
+% assign(y,s_y1);
+% assign(be,s_be1);
 
 %% solve the problem
 sol1=optimize(Cons,Obj,ops);
@@ -238,7 +238,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case25_noHeu_noV_withx0_withDE2_realf12_noSCF_Gap5');
+save('Case25_noCuts_noHeu_noV_nox0_noDE_realf12_noSCF_Gap5');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
