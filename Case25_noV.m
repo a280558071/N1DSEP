@@ -221,12 +221,16 @@ Cons=[Cons,Cons_Sub];
 % size(Cons_Sub)
 % size(Cons)
 
+%% Cons10: minimum links ¡ª¡ª Jan R H, Hwang F J, Chen S T. Topological optimization of a communication network subject to a reliability constraint[J]. IEEE Transactions on Reliability, 1993, 42(1): 63-70.
+Cons_Links=[sum(x)>=a]; % a is a magical number that limits the reliability of distribution network.
+Cons=[Cons,Cons_Links];
+
 %% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
-ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.limits.cutpasses',-1,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',0,'cplex.mip.tolerances.mipgap',5e-2);
-% load('Case25_noHeu_noV_nox0_withDE3_realf12_noSCF_Gap5.mat','s_x1','s_y1','s_be1');
-% assign(x,s_x1);
-% assign(y,s_y1);
-% assign(be,s_be1);
+ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.limits.cutpasses',-1,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',1,'cplex.mip.tolerances.mipgap',5e-2);
+load('Case25_noCuts_noHeu_noV_nox0_withDE3_realf12_noSCF_Gap5.mat','s_x1','s_y1','s_be1');
+assign(x,s_x1);
+assign(y,s_y1);
+assign(be,s_be1);
 
 %% solve the problem
 sol1=optimize(Cons,Obj,ops);
@@ -238,7 +242,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case25_noCuts_noHeu_noV_nox0_withDE2_realf12_noSCF_Gap5');
+save('Case25_noCuts_noHeu_noV_withx0_withDE2_realf12_noSCF_Gap5');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
