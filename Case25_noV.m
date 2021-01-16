@@ -86,7 +86,7 @@ N=25;
 
 N_Subs=[22,23,24,25];
 N_Loads=1:21;
-G=digraph(s,t);
+G=graph(s,t);
 idxOut = findedge(G,s,t); % !!!!!!*************** index of edge is not the same with that of in mpc.branch !!!!!!*******
 A=adjacency(G);  % ÁÚ½Ó¾ØÕó
 Full_A=full(A);
@@ -100,8 +100,12 @@ p=plot(G,'Layout','force');
 p.XData=CXY(1,:);
 p.YData=CXY(2,:);
 hold on;
-labelnode(p,N_Subs,{'Sub_2_2','Sub_2_3','Sub_2_4','Sub_2_5'});
-highlight(p,N_Subs,'Marker','s','NodeColor','g');
+labelnode(p,N_Subs,{'22','23','24','25'});
+highlight(p,N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
+highlight(p,N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
+highlight(p,s,t,'EdgeColor','k','LineStyle','-.','LineWidth',2,'EdgeFontSize',8);
+text(p.XData, p.YData, p.NodeLabel,'HorizontalAlignment', 'center','FontSize', 15); % put nodes' label in right position.
+p.NodeLabel={};
 % G_Subs = subgraph(G,N_Subs);
 % p1=plot(G_Subs);
 
