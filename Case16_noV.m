@@ -8,7 +8,7 @@
 % [J]. IEEE Transactions on Smart Grid, 2020, 11(5): 3944-3956.
 % [3] Wang Y, Xu Y, Li J, et al. On the Radiality Constraints for Distribution System Restoration and Reconfiguration Problems[J]. 
 % IEEE Transactions on Power Systems, 2020, 35(4): 3294-3296.
-% Case Data: a 24-node case with 4 substations from [1]
+% Case Data: a 16-node case with 4 substations from [1]
 
 clear all
 
@@ -71,7 +71,7 @@ N=16;
 
 N_Subs=[13,14,15,16];
 N_Loads=1:12;
-G=digraph(s,t);
+G=graph(s,t);
 idxOut = findedge(G,s,t); % !!!!!!*************** index of edge is not the same with that of in mpc.branch !!!!!!*******
 A=adjacency(G);  % ÁÚ½Ó¾ØÕó
 Full_A=full(A);
@@ -85,8 +85,12 @@ p=plot(G,'Layout','force');
 p.XData=CXY(1,:);
 p.YData=CXY(2,:);
 hold on;
-labelnode(p,N_Subs,{'Sub_1_3','Sub_1_4','Sub_1_5','Sub_1_6'});
-highlight(p,N_Subs,'Marker','s','NodeColor','g');
+labelnode(p,N_Subs,{'13','14','15','16'});
+highlight(p,N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
+highlight(p,N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
+highlight(p,s,t,'EdgeColor','k','LineStyle','-.','LineWidth',2,'EdgeFontSize',8);
+text(p.XData, p.YData, p.NodeLabel,'HorizontalAlignment', 'center','FontSize', 15); % put nodes' label in right position.
+p.NodeLabel={};
 % G_Subs = subgraph(G,N_Subs);
 % p1=plot(G_Subs);
 
@@ -211,11 +215,11 @@ Cons=[Cons,Cons_Sub];
 % Cons=[Cons,Cons_Links];
 
 %% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
-ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.limits.cutpasses',-1,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',0); %,'cplex.mip.tolerances.mipgap',5e-2);
-% load('Case16_noCuts_noHeu_noV_nox0_withDE3_realf12_noSCF_Gap5.mat','s_x1','s_y1','s_be1');
-% assign(x,s_x1);
-% assign(y,s_y1);
-% assign(be,s_be1);
+ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.limits.cutpasses',-1,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',1); %,'cplex.mip.tolerances.mipgap',5e-2);
+load('Case16_nox0_withDE3.mat','s_x1','s_y1','s_be1');
+assign(x,s_x1);
+assign(y,s_y1);
+assign(be,s_be1);
 
 %% solve the problem
 sol1=optimize(Cons,Obj,ops);
@@ -227,7 +231,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case16_nox0_noDE');
+save('Case16_withx0_noDE');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
@@ -240,16 +244,19 @@ for i=1:5 % Contigency i happens
             t_temp(l)=s1;
         end
     end
-    Gi=digraph(s_temp,t_temp);
+    Gi=graph(s_temp,t_temp);
     pi(i)=plot(Gi,'Layout','force');
     pi(i).XData=CXY(1,:);
     pi(i).YData=CXY(2,:);
-    labelnode(pi(i),N_Subs,{'Sub_2_1','Sub_2_2','Sub_2_3','Sub_2_4'});
-    highlight(pi(i),N_Subs,'Marker','s','NodeColor','g','MarkerSize',10);
+    labelnode(pi(i),N_Subs,{'13','14','15','16'});
+    highlight(pi(i),N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
+    highlight(pi(i),N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
     highlight(pi(i),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','--','LineWidth',1);
     highlight(pi(i),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
     highlight(pi(i),s_temp(i),t_temp(i),'EdgeColor','k','LineStyle','-','LineWidth',4);  % black line denotes the outage line
     highlight(pi(i),s_temp(find(s_y1(:,i)==1)),t_temp(find(s_y1(:,i)==1)),'EdgeColor','r','LineWidth',6,'LineStyle','-');
+    text(pi(i).XData, pi(i).YData, pi(i).NodeLabel,'HorizontalAlignment', 'center','FontSize', 15); % put nodes' label in right position.
+    pi(i).NodeLabel={};
 end
 
 %% find where rt!=0 and plot the Contigency senario
@@ -268,12 +275,13 @@ for i=yr'
             t_temp(l)=s1;
         end
     end
-    Gi=digraph(s_temp,t_temp);
+    Gi=graph(s_temp,t_temp);
     pir(j)=plot(Gi,'Layout','force');
     pir(j).XData=CXY(1,:);
     pir(j).YData=CXY(2,:);
-    labelnode(pir(j),N_Subs,{'Sub_2_1','Sub_2_2','Sub_2_3','Sub_2_4'});
-    highlight(pir(j),N_Subs,'Marker','s','NodeColor','g','MarkerSize',10);
+    labelnode(p,N_Subs,{'13','14','15','16'});
+    highlight(p,N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
+    highlight(p,N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
     highlight(pir(j),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','--','LineWidth',1);
     highlight(pir(j),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
     highlight(pir(j),s_temp(i),t_temp(i),'EdgeColor','k','LineStyle','-','LineWidth',4);  % black line denotes the outage line
@@ -283,4 +291,6 @@ for i=yr'
         labelnode(pir(j),N_RLoads(k),num2str(Load(N_RLoads(k))));
     end
     title(['Contigency ' num2str(i) ' happens, shedding load in node ', num2str(xr(j))]);
+    text(pir(i).XData, pir(i).YData, pir(i).NodeLabel,'HorizontalAlignment', 'center','FontSize', 15); % put nodes' label in right position.
+    pir(i).NodeLabel={};
 end
