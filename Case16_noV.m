@@ -95,13 +95,13 @@ p.NodeLabel={};
 % p1=plot(G_Subs);
 
 %% Variable statement
-ConsInf=xlsread('multistage_node16.xlsx','G3:R35');
-Load=xlsread('multistage_node16.xlsx','D2:D13');
-f_Max=ConsInf(:,10);
+ConsInf=xlsread('16bus33lines.xlsx','G3:L35');
+Load=xlsread('16bus33lines.xlsx','D3:D14');
+f_Max=ConsInf(:,4);
 % f_Max=ones(L,1)*50;
 g_Sub_Max=50;
 VOLL=1e8;
-Cost=ConsInf(:,12).*ConsInf(:,3);
+Cost=ConsInf(:,6).*ConsInf(:,3);
 x=binvar(L,1,'full');     %Vars for line construction, x(i,1)==1 dentoes that line i is constructed.
 y=binvar(L,L,'full');   %Vars for line operation flag in different contigencies, y(line operation,Cont_l)==0
 be=binvar(L,L,2,'full');  %Vars for line direction flag in different contigencies
@@ -233,7 +233,7 @@ s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
 save('Case16_withx0_noDE');
 %% Highlight the lines to be bulit and plot all the operation conditions
-for i=1:5 % Contigency i happens
+for i=15:20 % Contigency i happens
     figure;
     s_temp=s;
     t_temp=t;
@@ -251,11 +251,16 @@ for i=1:5 % Contigency i happens
     labelnode(pi(i),N_Subs,{'13','14','15','16'});
     highlight(pi(i),N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
     highlight(pi(i),N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
-    highlight(pi(i),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','--','LineWidth',1);
-    highlight(pi(i),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
-    highlight(pi(i),s_temp(i),t_temp(i),'EdgeColor','k','LineStyle','-','LineWidth',4);  % black line denotes the outage line
-    highlight(pi(i),s_temp(find(s_y1(:,i)==1)),t_temp(find(s_y1(:,i)==1)),'EdgeColor','r','LineWidth',6,'LineStyle','-');
+    highlight(pi(i),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','-.','LineWidth',1,'EdgeColor','k');
+    highlight(pi(i),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'EdgeColor','g','LineWidth',2); % bold line denotes the newly-built line
+    highlight(pi(i),s_temp(find(s_y1(:,i)==1)),t_temp(find(s_y1(:,i)==1)),'EdgeColor','b','LineWidth',6,'LineStyle','-');  % blue lines are lines in operation
+    l_Open=find((1-s_y1(:,i)).*s_x1==1); 
+    highlight(pi(i),s_temp(l_Open),t_temp(l_Open),'EdgeColor','g','LineWidth',2,'LineStyle','-'); % green line denotes the newly-built line NOT in operation
+    highlight(pi(i),s_temp(i),t_temp(i),'EdgeColor','r','LineStyle','-','LineWidth',4);  % red line denotes the outage line
     text(pi(i).XData, pi(i).YData, pi(i).NodeLabel,'HorizontalAlignment', 'center','FontSize', 15); % put nodes' label in right position.
+    text(0.5*(pi(i).XData(s_temp(i))+pi(i).XData(t_temp(i))), 0.5*(pi(i).YData(s_temp(i))+pi(i).YData(t_temp(i))), 'X','HorizontalAlignment', 'center','FontSize', 15,'Color','r'); % label outage lines with 'x' in the middle
+    l_newOpen=setdiff(l_Open,i);
+    text(0.5*(pi(i).XData(s_temp(l_newOpen))+pi(i).XData(t_temp(l_newOpen))), 0.5*(pi(i).YData(s_temp(l_newOpen))+pi(i).YData(t_temp(l_newOpen))), 'O','HorizontalAlignment', 'center','FontSize', 15,'Color','g'); % label newly-built and opened lines with 'o' in the middle
     pi(i).NodeLabel={};
 end
 
@@ -279,9 +284,9 @@ for i=yr'
     pir(j)=plot(Gi,'Layout','force');
     pir(j).XData=CXY(1,:);
     pir(j).YData=CXY(2,:);
-    labelnode(p,N_Subs,{'13','14','15','16'});
-    highlight(p,N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
-    highlight(p,N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
+    labelnode(pir,N_Subs,{'13','14','15','16'});
+    highlight(pir,N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
+    highlight(pir,N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
     highlight(pir(j),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','--','LineWidth',1);
     highlight(pir(j),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
     highlight(pir(j),s_temp(i),t_temp(i),'EdgeColor','k','LineStyle','-','LineWidth',4);  % black line denotes the outage line
