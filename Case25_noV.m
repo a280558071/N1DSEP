@@ -110,13 +110,13 @@ p.NodeLabel={};
 % p1=plot(G_Subs);
 
 %% Variable statement
-ConsInf=xlsread('multistage_node25.xlsx','G3:R42');
-Load=xlsread('multistage_node25.xlsx','D2:D22');
-f_Max=ConsInf(:,10);
+ConsInf=xlsread('25bus40lines.xlsx','G3:L42');
+Load=xlsread('25bus40lines.xlsx','D3:D23');
+f_Max=ConsInf(:,4);
 % f_Max=ones(L,1)*50;
 g_Sub_Max=50;
 VOLL=1e8;
-Cost=ConsInf(:,12).*ConsInf(:,3);
+Cost=ConsInf(:,6).*ConsInf(:,3);
 x=binvar(L,1,'full');     %Vars for line construction, x(i,1)==1 dentoes that line i is constructed.
 y=binvar(L,L,'full');   %Vars for line operation flag in different contigencies, y(line operation,Cont_l)==0
 be=binvar(L,L,2,'full');  %Vars for line direction flag in different contigencies
@@ -259,16 +259,24 @@ for i=1:5 % Contigency i happens
             t_temp(l)=s1;
         end
     end
-    Gi=digraph(s_temp,t_temp);
+    Gi=graph(s_temp,t_temp);
     pi(i)=plot(Gi,'Layout','force');
     pi(i).XData=CXY(1,:);
     pi(i).YData=CXY(2,:);
-    labelnode(pi(i),N_Subs,{'Sub_2_1','Sub_2_2','Sub_2_3','Sub_2_4'});
-    highlight(pi(i),N_Subs,'Marker','s','NodeColor','g','MarkerSize',10);
-    highlight(pi(i),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','--','LineWidth',1);
-    highlight(pi(i),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
-    highlight(pi(i),s_temp(i),t_temp(i),'EdgeColor','k','LineStyle','-','LineWidth',4);  % black line denotes the outage line
-    highlight(pi(i),s_temp(find(s_y1(:,i)==1)),t_temp(find(s_y1(:,i)==1)),'EdgeColor','r','LineWidth',6,'LineStyle','-');
+    labelnode(pi(i),N_Subs,{'22','23','24','25'});
+    highlight(pi(i),N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
+    highlight(pi(i),N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
+    highlight(pi(i),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','-.','LineWidth',1,'EdgeColor','k');
+    highlight(pi(i),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'EdgeColor','g','LineWidth',2); % bold line denotes the newly-built line
+    highlight(pi(i),s_temp(find(s_y1(:,i)==1)),t_temp(find(s_y1(:,i)==1)),'EdgeColor','b','LineWidth',6,'LineStyle','-');  % blue lines are lines in operation
+    l_Open=find((1-s_y1(:,i)).*s_x1==1); 
+    highlight(pi(i),s_temp(l_Open),t_temp(l_Open),'EdgeColor','g','LineWidth',2,'LineStyle','-'); % green line denotes the newly-built line NOT in operation
+    highlight(pi(i),s_temp(i),t_temp(i),'EdgeColor','r','LineStyle','-','LineWidth',4);  % red line denotes the outage line
+    text(pi(i).XData, pi(i).YData, pi(i).NodeLabel,'HorizontalAlignment', 'center','FontSize', 15); % put nodes' label in right position.
+    text(0.5*(pi(i).XData(s_temp(i))+pi(i).XData(t_temp(i))), 0.5*(pi(i).YData(s_temp(i))+pi(i).YData(t_temp(i))), 'X','HorizontalAlignment', 'center','FontSize', 15,'Color','r'); % label outage lines with 'x' in the middle
+    l_newOpen=setdiff(l_Open,i);
+    text(0.5*(pi(i).XData(s_temp(l_newOpen))+pi(i).XData(t_temp(l_newOpen))), 0.5*(pi(i).YData(s_temp(l_newOpen))+pi(i).YData(t_temp(l_newOpen))), 'O','HorizontalAlignment', 'center','FontSize', 15,'Color','g'); % label newly-built and opened lines with 'o' in the middle
+    pi(i).NodeLabel={};
 end
 
 %% find where rt!=0 and plot the Contigency senario
@@ -287,12 +295,13 @@ for i=yr'
             t_temp(l)=s1;
         end
     end
-    Gi=digraph(s_temp,t_temp);
+    Gi=graph(s_temp,t_temp);
     pir(j)=plot(Gi,'Layout','force');
     pir(j).XData=CXY(1,:);
     pir(j).YData=CXY(2,:);
-    labelnode(pir(j),N_Subs,{'Sub_2_1','Sub_2_2','Sub_2_3','Sub_2_4'});
-    highlight(pir(j),N_Subs,'Marker','s','NodeColor','g','MarkerSize',10);
+    labelnode(pir,N_Subs,{'22','23','24','25'});
+    highlight(pir,N_Loads,'NodeColor','y','Markersize',20,'NodeFontSize',20);
+    highlight(pir,N_Subs,'Marker','s','NodeColor','c','Markersize',30,'NodeFontSize',40);
     highlight(pir(j),s_temp(find(s_x1==0)),t_temp(find(s_x1==0)),'LineStyle','--','LineWidth',1);
     highlight(pir(j),s_temp(find(s_x1==1)),t_temp(find(s_x1==1)),'LineWidth',4); % bold line denotes the newly-built line
     highlight(pir(j),s_temp(i),t_temp(i),'EdgeColor','k','LineStyle','-','LineWidth',4);  % black line denotes the outage line
@@ -302,4 +311,6 @@ for i=yr'
         labelnode(pir(j),N_RLoads(k),num2str(Load(N_RLoads(k))));
     end
     title(['Contigency ' num2str(i) ' happens, shedding load in node ', num2str(xr(j))]);
+    text(pir(i).XData, pir(i).YData, pir(i).NodeLabel,'HorizontalAlignment', 'center','FontSize', 15); % put nodes' label in right position.
+    pir(i).NodeLabel={};
 end
