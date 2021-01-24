@@ -204,7 +204,7 @@ Cons=[Cons,Cons_ST];
 %% Cons6: Degree of Each Node Constr.
 Cons_De=[];
 for i=N_Loads
-    Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=3];
+    Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=2];
 end
 Cons=[Cons,Cons_De];
 % size(Cons_De)
@@ -243,11 +243,11 @@ for C_l=1:L
     Cons_Vol=[Cons_Vol,v(N_Subs,C_l)==v_max];
     Cons_Vol=[Cons_Vol,-(1-y(:,C_l))*M<=f(:,C_l).*z-Full_I'*v(:,C_l)<=(1-y(:,C_l))*M];
 end
-Cons=[Cons,Cons_Vol];
+% Cons=[Cons,Cons_Vol];
 %% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
 % ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.display',3,'usex0',0,'cplex.mip.tolerances.mipgap',5e-2,'cplex.mip.strategy.heuristicfreq',-1,'cplex.mip.limits.cutpasses',-1);
-ops=sdpsettings('solver','gurobi');
-% load('Case25_noCuts_noHeu_noV_nox0_withDE3_realf12_noSCF_Gap5.mat','s_x1','s_y1','s_be1');
+ops=sdpsettings('solver','gurobi','gurobi.MIPGap',5e-2,'usex0',1,'gurobi.Heuristics',0,'gurobi.Cuts',0);
+% load('Case25_noV_nox0_withDE3_Gap5_Gurobi.mat','s_x1','s_y1','s_be1');
 % assign(x,s_x1);
 % assign(y,s_y1);
 % assign(be,s_be1);
@@ -262,7 +262,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case25_V_nox0_withDE3_Gap5');
+save('Case25_noV_withx0_withDE2_Gap5_Gurobi');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
