@@ -204,7 +204,7 @@ Cons=[Cons,Cons_ST];
 %% Cons6: Degree of Each Node Constr.
 Cons_De=[];
 for i=N_Loads
-    Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=2];
+    Cons_De=[Cons_De,sum(x([find(s==i);find(t==i)]))>=3];
 end
 Cons=[Cons,Cons_De];
 % size(Cons_De)
@@ -264,7 +264,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case25_noV_nox0_withDE2_Gap5_Cplex');
+save('Case25_noV_nox0_withDE3_Gap5_Cplex');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
