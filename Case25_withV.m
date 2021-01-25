@@ -122,7 +122,7 @@ v_min=0.95;
 v_max=1.05;
 % f_Max=ones(L,1)*50;
 g_Sub_Max=50;
-M=1e8;
+M=1e7;
 Cost=ConsInf(:,6).*ConsInf(:,3);
 x=binvar(L,1,'full');     %Vars for line construction, x(i,1)==1 dentoes that line i is constructed.
 y=binvar(L,L,'full');   %Vars for line operation flag in different contigencies, y(line operation,Cont_l)==0
@@ -237,16 +237,18 @@ Cons=[Cons,Cons_Sub];
 % Cons_Links=[sum(x)>=a]; % a is a magical number that limits the reliability of distribution network.
 % Cons=[Cons,Cons_Links];
 %% Cons11: Voltage limits
-Cons_Vol=[];
-for C_l=1:L
-    Cons_Vol=[Cons_Vol,v_min<=v(:,C_l)<=v_max];
-    Cons_Vol=[Cons_Vol,v(N_Subs,C_l)==v_max];
-    Cons_Vol=[Cons_Vol,-(1-y(:,C_l))*M<=f(:,C_l).*z-Full_I'*v(:,C_l)<=(1-y(:,C_l))*M];
-end
+% Cons_Vol=[];
+% for C_l=1:L
+%     Cons_Vol=[Cons_Vol,v_min<=v(:,C_l)<=v_max];
+%     Cons_Vol=[Cons_Vol,v(N_Subs,C_l)==v_max];
+%     Cons_Vol=[Cons_Vol,-(1-y(:,C_l))*M<=f(:,C_l).*z-Full_I'*v(:,C_l)<=(1-y(:,C_l))*M];
+% end
 % Cons=[Cons,Cons_Vol];
+%% Cons12: Best Known Obj
+% Cons=[Cons, Obj>=94858];
 %% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
-% ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.display',3,'usex0',0,'cplex.mip.tolerances.mipgap',5e-2,'cplex.mip.strategy.heuristicfreq',-1,'cplex.mip.limits.cutpasses',-1);
-ops=sdpsettings('solver','gurobi','gurobi.MIPGap',5e-2,'usex0',1,'gurobi.Heuristics',0,'gurobi.Cuts',0);
+ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.display',3,'usex0',0,'cplex.mip.tolerances.mipgap',5e-2);%,'cplex.mip.limits.cutpasses',-1,'cplex.mip.tolerances.integrality',1e-8);
+% ops=sdpsettings('solver','gurobi','gurobi.MIPGap',5e-2,'gurobi.Heuristics',0,'gurobi.Cuts',0,'usex0',0);% 
 % load('Case25_noV_nox0_withDE3_Gap5_Gurobi.mat','s_x1','s_y1','s_be1');
 % assign(x,s_x1);
 % assign(y,s_y1);
@@ -262,7 +264,7 @@ s_f1=value(f);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case25_noV_withx0_withDE2_Gap5_Gurobi');
+save('Case25_noV_nox0_withDE2_Gap5_Cplex');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
