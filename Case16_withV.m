@@ -231,7 +231,8 @@ Cons=[Cons,Cons_Vol];
 
 %% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
 ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.limits.cutpasses',-1,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',1); %,'cplex.mip.tolerances.mipgap',5e-2);
-load('Case16_V_nox0_withDE3.mat','s_x1','s_y1','s_be1');
+% ops=sdpsettings('solver','gurobi', 'gurobi.Heuristics',0,'gurobi.Cuts',0,'usex0',0);%'gurobi.MIPGap',5e-2,
+load('Case16_Cplex_BB_V_nox0_withDE3.mat','s_x1','s_y1','s_be1');
 assign(x,s_x1);
 assign(y,s_y1);
 assign(be,s_be1);
@@ -247,7 +248,7 @@ s_v1=value(v);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case16_V_withx0_withDE2');
+save('Case16_Cplex_BB_V_withx0_withDE2');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
