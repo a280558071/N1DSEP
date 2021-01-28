@@ -107,7 +107,8 @@ v_min=0.95;
 v_max=1.05;
 % f_Max=ones(L,1)*50;
 g_Sub_Max=50;
-M=1e8;
+M=1e7;
+M2=1e3;
 Cost=ConsInf(:,6).*ConsInf(:,3);
 x=binvar(L,1,'full');     %Vars for line construction, x(i,1)==1 dentoes that line i is constructed.
 y=binvar(L,L,'full');   %Vars for line operation flag in different contigencies, y(line operation,Cont_l)==0
@@ -225,14 +226,14 @@ Cons_Vol=[];
 for C_l=1:L
     Cons_Vol=[Cons_Vol,v_min<=v(:,C_l)<=v_max];
     Cons_Vol=[Cons_Vol,v(N_Subs,C_l)==v_max];
-    Cons_Vol=[Cons_Vol,-(1-y(:,C_l))*M<=f(:,C_l).*z-Full_I'*v(:,C_l)<=(1-y(:,C_l))*M];
+    Cons_Vol=[Cons_Vol,-(1-y(:,C_l))*M2<=f(:,C_l).*z-Full_I'*v(:,C_l)<=(1-y(:,C_l))*M2];
 end
 Cons=[Cons,Cons_Vol];
 
 %% Set initial guess of x,y and be_Nodes to values in "Case25_noV_nox0_withDE3_realf12.mat"
-ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.limits.cutpasses',-1,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',1); %,'cplex.mip.tolerances.mipgap',5e-2);
-% ops=sdpsettings('solver','gurobi', 'gurobi.Heuristics',0,'gurobi.Cuts',0,'usex0',0);%'gurobi.MIPGap',5e-2,
-load('Case16_Cplex_BB_V_nox0_withDE3.mat','s_x1','s_y1','s_be1');
+% ops=sdpsettings('solver','cplex','verbose',2,'cplex.mip.limits.cutpasses',-1,'cplex.mip.display',3,'cplex.mip.strategy.heuristicfreq',-1,'usex0',1); %,'cplex.mip.tolerances.mipgap',5e-2);
+ops=sdpsettings('solver','gurobi', 'gurobi.Heuristics',0,'gurobi.Cuts',0,'usex0',1);%'gurobi.MIPGap',5e-2,
+load('Case16_Gurobi_newM_BB_V_nox0_withDE3.mat','s_x1','s_y1','s_be1');
 assign(x,s_x1);
 assign(y,s_y1);
 assign(be,s_be1);
@@ -248,7 +249,7 @@ s_v1=value(v);
 s_rt1=value(rt);
 s_g_Sub1=value(g_Sub);
 s_Obj1=value(Obj);
-save('Case16_Cplex_BB_V_withx0_withDE2');
+save('Case16_Gurobi_newM_BB_V_withx0_withDE2');
 %% Highlight the lines to be bulit and plot all the operation conditions
 for i=1:5 % Contigency i happens
     figure;
